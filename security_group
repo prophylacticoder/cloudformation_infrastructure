@@ -1,0 +1,52 @@
+Mappings:
+  RegionMap:
+    SouthAmerica: sa-east-1
+
+RESOURCES:
+  SGforVM:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group for VM
+      GroupName: monster-vm-sg
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        Description: Allows communication with SG-ALB
+        DestinationSecurityGroupId: !Ref SGforALB
+        FromPort: 0
+        ToPort: 65535
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        CidrIp: 0.0.0.0/0
+        FromPort: 22
+        ToPort: 22
+      - IpProtocol: tcp
+        SourceSecurityGroupId: !SGforALB
+        FromPort: 0
+        ToPort: 65535
+      VpcId: !FindInMap [Mappings, RegionMap, SouthAmerica]
+
+  SGforALB:
+    Type: AWS::EC2::SecurityGroup
+      GroupDescription: Security Group for ALB
+      GroupName: monster-alb-sg
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        CidrIp: 0.0.0.0/0
+        FromPort: 80
+        ToPort: 80
+      SecurityGroupEgress:
+      - IpProtocol: -1
+        CidrIp: 0.0.0.0/0
+        FromPort: 0
+        ToPort: 65535
+      VpcId: !FindInMap [Mappings, RegionMap, SouthAmerica]
+Outputs:
+  SecurityGroupVM:
+    Description: Security Group for VM
+    Value: !Ref SGforVM
+  SecurityGroupALB:
+    Description: Security Group for ALB
+    Value: !Ref SGforALB
+
+
+
